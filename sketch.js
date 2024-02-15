@@ -1,6 +1,7 @@
 let img;
 let font;
 let pg;
+let pg2; 
 let val = [0, 90, 180, 270, 360];
 let windowRatio;
 let refresh = false;
@@ -14,6 +15,7 @@ function preload() {
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
   pg = createGraphics(windowWidth, windowHeight);
+  pg2 = createGraphics(windowWidth, windowHeight); 
   canvas.drop(gotFile);
 
   textAlign(CENTER, CENTER);
@@ -27,24 +29,24 @@ function setup() {
   text("Drag & drop your image file into the window", 0, 0);
   pop();
 
-  tilesSlider = createSlider(0,30,15);
-  tilesSlider.position(10,10);
-  tilesSlider.input(() => { 
+  tilesSlider = createSlider(2, 30, 15);
+  tilesSlider.position(10, 10);
+  tilesSlider.input(() => {
     refresh = true;
-    loop(); 
+    loop();
   });
 
   refreshButton = createButton('Refresh');
   refreshButton.position(10, 35);
   refreshButton.mousePressed(() => {
-    refresh = true; 
+    refresh = true;
     loop();
   });
 
   saveImgButton = createButton('Save');
-  saveImgButton.position(10,60);
+  saveImgButton.position(10, 60);
   saveImgButton.mousePressed(() => {
-  save("collage.jpeg")
+    save("collage.jpeg");
   });
 }
 
@@ -53,46 +55,48 @@ function gotFile(file) {
   reader.onload = function(event) {
     loadImage(event.target.result, (loadedImage) => {
       img = loadedImage;
-      refresh = true; 
-      loop(); 
+      refresh = true;
+      loop();
     });
   };
   reader.readAsDataURL(file.file);
 }
 
 function draw() {
-  if (refresh) {
-    windowRatio = windowWidth / windowHeight;
 
-    if (img && img.width > 0) {
-      let imgRatio = img.width / img.height;
-      let drawWidth, drawHeight, xOffset = 0, yOffset = 0;
-      if (imgRatio > windowRatio) {
-        drawHeight = windowHeight;
-        drawWidth = img.width * (drawHeight / img.height);
-        xOffset = (windowWidth - drawWidth) / 2;
-      } else {
-        drawWidth = windowWidth;
-        drawHeight = img.height * (drawWidth / img.width);
-        yOffset = (windowHeight - drawHeight) / 2;
-      }
-      image(img, xOffset, yOffset, drawWidth, drawHeight);
+  if (img && img.width > 0) {
+    windowRatio = windowWidth / windowHeight;
+    let imgRatio = img.width / img.height;
+    let drawWidth, drawHeight, xOffset = 0, yOffset = 0;
+
+    if (imgRatio > windowRatio) {
+      drawWidth = windowWidth;
+      drawHeight = drawWidth / imgRatio;
+      yOffset = (windowHeight - drawHeight) / 2;
+    } else {
+      drawWidth = windowWidth;
+      drawHeight = drawWidth / imgRatio;
+      yOffset = (windowHeight - drawHeight) / 2;
     }
+
+    pg2.clear();
+    pg2.image(img, xOffset, yOffset, drawWidth, drawHeight);
+  }
+
+  if (refresh) {
     rotationCollage();
     refresh = false;
-    noLoop(); 
+    noLoop();
   }
 }
 
 function rotationCollage() {
-  if (!img || img.width <= 0) return;
-
-  pg.clear();
-
+  pg.clear(); 
   tilesX = max(1, tilesSlider.value());
-  if (tilesX <= 1) {
-    return; 
-  }
+
+  // if (tilesX <= 1) {
+  //   return;
+  // }
 
   let tilesY = tilesX * (windowHeight / windowWidth);
   let tileW = windowWidth / tilesX;
@@ -103,19 +107,15 @@ function rotationCollage() {
       let px = x * tileW;
       let py = y * tileH;
 
-      let sx = map(px, 0, windowWidth, 0, img.width);
-      let sy = map(py, 0, windowHeight, 0, img.height);
-      let sWidth = img.width / tilesX;
-      let sHeight = img.height / tilesY;
-
       pg.push();
       pg.translate(px + tileW / 2, py + tileH / 2);
       pg.rotate(radians(random(val)));
       pg.imageMode(CENTER);
-      pg.image(img, 0, 0, tileW, tileH, sx, sy, sWidth, sHeight);
+      pg.image(pg2, 0, 0, tileW, tileH, px, py, tileW, tileH);
       pg.pop();
     }
   }
+
   imageMode(CORNER);
   image(pg, 0, 0, windowWidth, windowHeight);
 }
