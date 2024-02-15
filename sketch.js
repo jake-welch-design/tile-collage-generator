@@ -87,27 +87,35 @@ function draw() {
 function rotationCollage() {
   if (!img || img.width <= 0) return;
 
-  pg.clear(); 
-  
-  tilesX = tilesSlider.value();
-  let tilesY = tilesX / windowRatio;
-  let tileW = ceil(pg.windowWidth / tilesX);
-  let tileH = ceil(pg.windowHeight / tilesY);
+  pg.clear();
+
+  tilesX = max(1, tilesSlider.value());
+  if (tilesX <= 1) {
+    return; 
+  }
+
+  let tilesY = tilesX * (windowHeight / windowWidth);
+  let tileW = windowWidth / tilesX;
+  let tileH = windowHeight / tilesY;
 
   for (let x = 0; x < tilesX; x++) {
     for (let y = 0; y < tilesY; y++) {
-      let px = int(x * tileW);
-      let py = int(y * tileH);
+      let px = x * tileW;
+      let py = y * tileH;
+
+      let sx = map(px, 0, windowWidth, 0, img.width);
+      let sy = map(py, 0, windowHeight, 0, img.height);
+      let sWidth = img.width / tilesX;
+      let sHeight = img.height / tilesY;
 
       pg.push();
       pg.translate(px + tileW / 2, py + tileH / 2);
-      pg.rotate(radians(random(val))); 
+      pg.rotate(radians(random(val)));
       pg.imageMode(CENTER);
-      pg.image(img, -tileW / 2, -tileH / 2, tileW, tileH, px, py, int(tileW), int(tileH));
+      pg.image(img, 0, 0, tileW, tileH, sx, sy, sWidth, sHeight);
       pg.pop();
     }
   }
-
   imageMode(CORNER);
-  image(pg, 0, 0, width, height);
+  image(pg, 0, 0, windowWidth, windowHeight);
 }
