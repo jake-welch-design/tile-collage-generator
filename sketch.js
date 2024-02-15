@@ -7,6 +7,8 @@ let windowRatio;
 let refresh = false;
 let tilesSlider;
 let tilesX;
+let chooseFileInput; 
+
 
 function preload() {
   font = loadFont('fonts/Satoshi-Regular.otf');
@@ -20,13 +22,13 @@ function setup() {
 
   textAlign(CENTER, CENTER);
   textFont(font);
-  textSize(36);
+  textSize(24);
   background(0);
 
   push();
   translate(windowWidth / 2, windowHeight / 2);
   fill(255);
-  text("Drag & drop your image file into the window", 0, 0);
+  text("Drag & drop your image\ninto the window.", 0, 0);
   pop();
 
   tilesSlider = createSlider(2, 30, 15);
@@ -48,6 +50,16 @@ function setup() {
   saveImgButton.mousePressed(() => {
     save("collage.jpeg");
   });
+
+  chooseFileInput = createFileInput(handleFile);
+  chooseFileInput.position(0, 0);
+  chooseFileInput.style('display', 'none'); 
+
+  chooseFileButton = createButton('Choose file');
+  chooseFileButton.position(10, 85);
+  chooseFileButton.mousePressed(() => {
+  chooseFileInput.elt.click(); 
+  });
 }
 
 function gotFile(file) {
@@ -60,6 +72,17 @@ function gotFile(file) {
     });
   };
   reader.readAsDataURL(file.file);
+}
+
+function handleFile(file) {
+  if (file.type === 'image') {
+    img = loadImage(file.data, () => {
+      refresh = true;
+      loop();
+    });
+  } else {
+    console.log('This file is not an image.');
+  }
 }
 
 function draw() {
